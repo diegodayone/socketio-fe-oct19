@@ -123,7 +123,6 @@ class App extends React.Component {
           <select onChange={e => this.setState({ to: e.currentTarget.value })}>
             {this.state.connectedUsers.map((user,i) => <option key={i} value={user}>{user}</option>)}
           </select>
-          {/* <input type="text" placeholder="to" value={this.state.to} onChange={(e) => this.setState({ to: e.currentTarget.value })} /> */}
           <input type="button" onClick={this.sendMessage} value="send" />
         </div>
       </div>
