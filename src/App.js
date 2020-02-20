@@ -18,7 +18,7 @@ class App extends React.Component {
     connectedUsers: []
   }
 
-  componentDidMount = async () => {
+  configSocketIO = () => {
     this.socket = io('http://localhost:8080', {
       transports: ['websocket']
     })
@@ -29,15 +29,24 @@ class App extends React.Component {
       })
     })
 
-    if (localStorage.getItem("token")) {
-      const resp = await fetch("http://localhost:8080/auth/refresh", {
+    this.socket.on("login", (user) => {
+      console.log(user.newUser + " is connected")
+      this.setState({
+        connectedUsers: user.connectedUsers
+      })
+    })
+  }
+
+  handleToken = async () => {
+    if (localStorage.getItem("token")) { // if we have a token
+      const resp = await fetch("http://localhost:8080/auth/refresh", {  //we test it 
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "Authorization": "Bearer " + localStorage.getItem("token")
         }
       })
-      if (resp.ok){
+      if (resp.ok){ //if it's valid, we fetch messages
         const json = await resp.json();
         this.setState({ token: json.access_token, username: json.user.username })
         this.socket.emit("login", { token: localStorage.getItem("token")  })
@@ -53,17 +62,15 @@ class App extends React.Component {
         })
 
       }
-      else{
+      else{ //else, we remove the token (it's probably expired!)
         localStorage.removeItem("token")
       }
-    }
+  }
+}
 
-    this.socket.on("login", (user) => {
-      console.log(user.newUser + " is connected")
-      this.setState({
-        connectedUsers: user.connectedUsers
-      })
-    })
+  componentDidMount = async () => {
+    this.configSocketIO()
+    this.handleToken()
   }
 
   sendMessage = () => {
